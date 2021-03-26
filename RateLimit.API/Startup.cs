@@ -1,5 +1,7 @@
+using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +29,28 @@ namespace RateLimit.API
         public void ConfigureServices(IServiceCollection services)
         {
 
+
+            services.AddOptions(); //ratelimit ayarlarý appsettings.json'dan okuyacaðýndan dolayý bunu eklemeliyiz.
+
+            services.AddMemoryCache(); //biriken istekleri ram bellekte tutmak için gerekli bir servis. 
+
+            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting")); //IpRateLimiting adlý oluþturulan key'den deðerleri oku.
+
+            services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies")); //IpRateLimiting adlý oluþturulan key'den sartnameleri oku.
+
+            //yukarýdaki datalarý tutacak memorycash'i belirtmek gerekiyor.
+            //uygulama ayaða kalktýgýnda bir defa yüklensin, bir daha nesne örneði alýnmasýn demek için AddSingleton diyoruz.
+            services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>(); //IIpPolicyStore ile karþýlaþýrsan MemoryCacheIpPolicyStore'a kaydet. birden fazla sunucu yapýmýz olsaydý, distributedcache kullanmamýz gerekirdi.
+            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>(); // kaç request yapýldýgý datalarýn yeri belirtildi.
+
+            //request yapanýnýn header, ip adresi falan okuyabilmesi için eklemek gerekir. 
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            //ana rate limit servisi eklemek elzem.
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -43,6 +67,8 @@ namespace RateLimit.API
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RateLimit.API v1"));
             }
+
+            app.UseIpRateLimiting(); //RateLimit'i kullanmak için middleware üzerinden kýsýtlama eklendi.
 
             app.UseHttpsRedirection();
 
