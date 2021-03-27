@@ -34,13 +34,13 @@ namespace RateLimit.API
 
             services.AddMemoryCache(); //biriken istekleri ram bellekte tutmak için gerekli bir servis. 
 
-            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting")); //IpRateLimiting adlý oluþturulan key'den deðerleri oku.
+            services.Configure<ClientRateLimitOptions>(Configuration.GetSection("ClientRateLimiting")); 
 
-            services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies")); //IpRateLimiting adlý oluþturulan key'den sartnameleri oku.
+            services.Configure<ClientRateLimitPolicies>(Configuration.GetSection("ClientRateLimitPolicies"));
 
             //yukarýdaki datalarý tutacak memorycash'i belirtmek gerekiyor.
             //uygulama ayaða kalktýgýnda bir defa yüklensin, bir daha nesne örneði alýnmasýn demek için AddSingleton diyoruz.
-            services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>(); //IIpPolicyStore ile karþýlaþýrsan MemoryCacheIpPolicyStore'a kaydet. birden fazla sunucu yapýmýz olsaydý, distributedcache kullanmamýz gerekirdi.
+            services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>(); // kaç request yapýldýgý datalarýn yeri belirtildi.
 
             //request yapanýnýn header, ip adresi falan okuyabilmesi için eklemek gerekir. 
@@ -68,7 +68,7 @@ namespace RateLimit.API
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RateLimit.API v1"));
             }
 
-            app.UseIpRateLimiting(); //RateLimit'i kullanmak için middleware üzerinden kýsýtlama eklendi.
+            app.UseClientRateLimiting(); //RateLimit'i kullanmak için middleware üzerinden kýsýtlama eklendi.
 
             app.UseHttpsRedirection();
 

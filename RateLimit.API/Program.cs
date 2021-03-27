@@ -17,9 +17,9 @@ namespace RateLimit.API
         {
             var webhost = CreateHostBuilder(args).Build();
 
-            var IpPolicy = webhost.Services.GetRequiredService<IIpPolicyStore>(); //required olanýný kullanýyoruz çünkü bu servis program için olmazsa olmaz.
+            // var IpPolicy = webhost.Services.GetRequiredService<IIpPolicyStore>(); //required olanýný kullanýyoruz çünkü bu servis program için olmazsa olmaz.
 
-            IpPolicy.SeedAsync().Wait(); //seesasync appsettings içindeki kurallarý uygulayacak.
+            // IpPolicy.SeedAsync().Wait(); //seesasync appsettings içindeki kurallarý uygulayacak.
 
             webhost.Run();
         }
