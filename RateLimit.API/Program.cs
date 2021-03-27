@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using AspNetCoreRateLimit;
 
 namespace RateLimit.API
 {
@@ -13,7 +15,13 @@ namespace RateLimit.API
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var webhost = CreateHostBuilder(args).Build();
+
+            var IpPolicy = webhost.Services.GetRequiredService<IIpPolicyStore>(); //required olanýný kullanýyoruz çünkü bu servis program için olmazsa olmaz.
+
+            IpPolicy.SeedAsync().Wait(); //seesasync appsettings içindeki kurallarý uygulayacak.
+
+            webhost.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
